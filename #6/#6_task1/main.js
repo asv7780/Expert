@@ -100,4 +100,3 @@ num = Number(num); //or
 num = Number(num) + 9;// 10))
 console.log (num);
 
-// GIT
