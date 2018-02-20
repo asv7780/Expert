@@ -59,7 +59,10 @@ function printResult(result) {
     }
 }
 
+
 btn.addEventListener("click", runGame);
+
+//
 
 
 
