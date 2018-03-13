@@ -9,7 +9,7 @@ function transform() {
     2. Используйте функцию forEach. Внутри цикла создайте новый массив объектов. В процессе создания нового массива объектов, избавьтесь от ключа id.То есть в вашем новом массиве не должно быть id в каждом конкретном объекте.*/
     let newArr = [];
 
-    (function makeNewArr() {
+    function makeNewArr() {
         data.splice(5, 1);
         data.forEach(function (item) {
             newArr.push({
@@ -20,8 +20,9 @@ function transform() {
                 date: item.date
             })
         });
-    }());
+    }
 
+    makeNewArr();
     /*3 По новому массиву объектов, полученному с помощью функции forEach пройдитесь методом map()
      4 На каждой итерации цикла мы получаем один объект из массива объектов. Берем этот объект и преобразоваем его поля по следующим правилам.
      5. Для поля Name: с помощью функций работы со стрингами делаете первую букву большой, остальные маленькие (ДЖИП -> Джип)
@@ -56,8 +57,8 @@ function transform() {
         return moment(date).format('YYYY/MM/DD, HH:mm');
     }
 
-    function mapedArr() {
-        newArr.map(item => {
+    function mapedArr(newArr) {
+        return newArr.map(item => {
             return {
                 url: newUrl(item.url),
                 name: newName(item.name),
