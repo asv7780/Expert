@@ -1,3 +1,65 @@
+// //Приклад(інструкція):
+
+
+// (function(){
+// let btn = document.getElementById("play"),
+//     firstBlock = document.querySelector('#first-line'),
+//     secondBlock = document.querySelector('#second-line'),
+//     thirdBlock = document.querySelector('#third-line');
+//
+// let item = {
+//     url: "http://desktopwallpapers.org.ua/mini/201507/40069.jpg",
+//     name: "CHEVROLET",
+//     description : "Lorem ipsum dolor sit amet",
+//     date : "2015/01/25 14:15"
+// };
+//
+// function init() {
+//     // сначала снимаете значение с селектбокса,
+//     // document.getElementById("").value
+//     // определяете какой способ построения галлереи надо использовать
+//     // запускаете необходимую логику
+//
+//     // код ниже дан для справки, вам нужно будет использовать тот вариан который вы выбрали в селектбоксе
+//     // пример построения галлереи с помощю replace
+//     var replaceItemTemplate = '<div class="col-sm-3 col-xs-6">\
+//     <img src="$url" alt="$name" class="img-thumbnail">\
+//     <div class="info-wrapper">\
+//     <div class="text-muted">$name</div>\
+//     <div class="text-muted top-padding">$description</div>\
+//     <div class="text-muted">$date</div>\
+//     </div>\
+//     </div>';
+//
+//     let resultHTML = replaceItemTemplate
+//         .replace(/\$name/gi, item.name)
+//         .replace("$url", item.url)
+//         .replace("$description", item.description)
+//         .replace("$date", item.date);
+//
+//     firstBlock.innerHTML = resultHTML;
+//
+//     // один из примеров как прятать блоки
+//     document.querySelector('.first-group').classList.add("show");
+//     document.querySelector('.second-group').classList.add("hide");
+//     document.querySelector('.third-group').classList.add("hide");
+//
+//     // пример построения галлереи с помощю шаблонных строк
+//     let secondItemTemplate = `<div class="col-sm-3 col-xs-6">\
+//     <img src="${item.url}" alt="${item.name}" class="img-thumbnail">\
+//     <div class="info-wrapper">\
+//         <div class="text-muted">${item.name}</div>\
+//         <div class="text-muted top-padding">${item.description}</div>\
+//         <div class="text-muted">${item.date}</div>\
+//     </div>\
+//     </div>`;
+//     //secondBlock.innerHTML = secondItemTemplate;
+// }
+//
+// btn.addEventListener("click", init);
+
+// })()
+//
 (function () {
 
     let btn = document.getElementById("play"),
@@ -33,8 +95,7 @@
 
     function newDate(date) {
         date = parseInt(date);
-        return (Number.isNaN(date) === false) ? moment(date).format("YYYY/MM/DD HH:mm") : moment().format("YYYY/MM/DD" +
-            " HH:mm");
+        return (Number.isNaN(date) === false) ? moment(date).format("YYYY/MM/DD HH:mm") : moment().format("YYYY/MM/DD" + " HH:mm");
     }
 
 
@@ -61,8 +122,7 @@
 
         return template;
     };
-// newArr = [...data]
-//     newArr = data.slice(0,index)
+
 
     let templater = () => {
         let template = '';
@@ -183,23 +243,22 @@
             for (let i = 0; i < numberOfItems; i++) {
                 template(newArr[i]);
             }
+            return null;
         }
-        return null;
     };
 
 
     function init() {
-        // read input data
+
         let buildType = parseInt(document.getElementById('type-selector').value);
         let displayType = parseInt(document.getElementById('line-selector').value);
 
         if (buildType === 0) return;
         hideAll();
-        // get gallery structure
+
         let template = builder(buildType, numberOfItems(displayType));
-        // if structure is not empty
+
         if (template) {
-            // print gallery
             printGallery(buildType, template);
         }
     }
@@ -207,4 +266,3 @@
     btn.addEventListener("click", init);
 
 })();
-
