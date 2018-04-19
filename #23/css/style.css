@@ -1,0 +1,30 @@
+.site-wrapper {
+    margin-top: 50px;
+}
+
+.text-center {
+    margin-top: 20px;
+}
+
+#play {
+    margin-bottom: 20px;
+}
+
+.form-group {
+    width: 210px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.info-wrapper {
+    padding: 5px;
+    text-align: left;
+}
+
+.count-selector {
+    width: 130px;
+}
+
+.top-padding {
+    padding-top: 10px;
+}
