@@ -1,0 +1,412 @@
+МОДУЛЬ И THIS
+
+Паттерн «Модуль»
+
+Паттерн «Модуль» помогает изолировать разные части логики приложения от глобального контекста для избегания конфликтов и ошибок.
+Такую изолированную часть кода можно многократно использовать в разных местах, не боясь конфликтов с уже существующим кодом. Самой распространенной проблемой, может быть конфликт имен в коде. Например, часть функций или переменных, в новом коде, будут иметь такие же имена, с теми, что находятся в старом коде.
+Модуль создается с помощью обычной функции, так как функция создает новую область видимости, и дает возможность изолировать все переменные и функции внутри себя. Все это возможно благодаря замыканию.
+Первый способ создания такого Модуля, использование самовызывающейся функции.
+
+(function() {
+    const numbers = [423, 32, 343, 42, 22, 12];
+
+    function filterNumber() {
+        let newNumber = numbers.filter(number => number < 100);
+
+        console.log(newNumber);
+    }
+
+    filterNumber();
+}());
+С помощью самовызывающейся функции и благодаря замыканию, изолируются все переменные и функции и никаких конфликтов не возникнет. Кроме того, необязательно все переменные определять внутри Модуля, значения можно передавать как параметры, внутрь него.
+
+(function(array) {
+    const numbers = array;
+
+    function filterNumber() {
+        let newNumber = numbers.filter(number => number < 100);
+
+        console.log(newNumber);
+    }
+
+    filterNumber();
+}([423, 32, 343, 42, 22, 12]));
+Следующий и более полезный способ создания Модуля – предоставление объектного интерфейса.
+
+const calculate = (function() {
+    const numbers = [31, 42, 5, 34, 8];
+
+    return {
+        multiply: function() {
+            let result = numbers.reduce((accumulator, number) => {
+                return accumulator * number;
+            }, 1);
+
+            console.log(result);
+        },
+
+        add: function() {
+            let result = numbers.reduce((accumulator, number) => {
+                return accumulator + number;
+            }, 0);
+
+            console.log(result);
+        }
+    }
+})();
+
+calculate.add(); // 120
+Этот подход, так же использует самовызывающуюся функцию, но если в первом подходе, просто выполняется какой-то код внутри Модуля, то тут, с помощью return указываем к каким методам можно получить доступ извне.
+Может возникнуть вопрос, в каком случае это может быть полезным. Например, создается Модуль, который реализует внутри функционал калькулятора, назовем его Калькулятор. Можно подключить этот Калькулятор к уже существующему коду и использовать его методы, для оперирования числами, просто передавая числа как параметры.
+
+const calculate = (function() {
+    function calculation(numbers, operand) {
+        const start = numbers[0];
+        const newNumbers = numbers.slice(1);
+
+        let result = newNumbers.reduce((accumulator, number) => {
+            if(operand === '+') {
+                return accumulator + number;
+            } else if (operand === '*') {
+                return accumulator * number;
+            } else {
+                return null;
+            }
+        }, start);
+
+        return result;
+    }
+
+    function multiplyNumbers(numbers) {
+        let result = calculation(numbers, '*');
+
+        console.log(result);
+    }
+
+    function addNumbers(numbers) {
+        let result = calculation(numbers, '+');
+
+        console.log(result);
+    }
+
+    return {
+        multiply: multiplyNumbers,
+        add: addNumbers
+    }
+})();
+
+calculate.multiply([31, 42, 5, 34, 8]); // 1 770 720
+В примере выше так же показан подход, в котором сначала определяются все функции модуля, а потом те, которые будут доступны, как публичные методы. Так называемый «публичный интерфейс».
+В данном примере функции находятся внутри модуля и недоступны извне. По этому их условно можно назвать «приватными». Те функции, которые возвращаются с помощью return будут доступны остальному коду. По этому их можно назвать «публичными». Наименование «приватные/публичные методы» обычно используется в классах. Но в такого рода модулях иногда так же используют подобное наименование.
+Как правило, переменные или константы внутри модуля не делают публичными, при необходимости обратиться к ним или установить значение такой переменной, делают специальные методы, которые называют геттеры и сеттеры.
+
+const calculate = (function() {
+    let numbers = [];
+
+    function setNumbers(...num) {
+        num.forEach(n => numbers.push(n));
+    }
+
+    function getNumbers() {
+        console.log(numbers.toString());
+    }
+
+    function calculation(operand) {
+        const start = numbers[0];
+        const newNumbers = numbers.slice(1);
+
+        let result = newNumbers.reduce((accumulator, number) => {
+            if(operand === '+') {
+                return accumulator + number;
+            } else if (operand === '*') {
+                return accumulator * number;
+            } else {
+                return null;
+            }
+        }, start);
+
+        return result;
+    }
+
+    function multiplyNumbers() {
+        let result = calculation('*');
+        console.log(result);
+    }
+
+    function addNumbers() {
+        let result = calculation('+');
+        console.log(result);
+    }
+
+    return {
+        getNumbers: getNumbers,
+        setNumbers: setNumbers,
+        multiply: multiplyNumbers,
+        add: addNumbers
+    }
+})();
+
+calculate.setNumbers(31, 42, 5, 34, 8);
+calculate.add(); // 120
+calculate.getNumbers(); // 31,42,5,34,8
+В примере выше отсутствует прямой доступ к переменной numbers, но зато, установить или получить значение возможно с помощью соответствующих методов setNumbers и getNumbers.
+
+Функция-конструктор
+
+В JavaScript все, кроме примитивов, объекты. Функции так же являются объектами.
+Каждую функцию можно использовать как функцию-конструктор, то есть функцию, с помощью которой можно создать новый объект с определенными заданными свойствами и методами. Для этого необходимо перед вызовом функции поставить оператор new. Именно этот оператор помогает не вызвать функцию, а запустить процесс инициализации нового объекта.
+Функции-конструкторы используются для создания множества однотипных объектов с набором свойств и методов.
+Несмотря на то, что функцией-конструктором может быть любая функция, их принято именовать с заглавной буквы.
+
+function Room() { }
+
+const guestRoom = new Room();
+
+console.log(typeof guestRoom); // object
+Как уже упоминалось, функция-конструктор может содержать свойства, которые при инициализации экземпляра объекта (нового объекта, созданного с помощью функции-конструктора) будут принадлежать этому объекту. Для этого используется ключевое слово this.
+
+function Room (name) {
+    this.area = 12;
+    this.name = name;
+}
+
+const guestRoom = new Room('Guest');
+
+console.log(guestRoom);
+// Room {
+//     area: 12,
+//     name: "Guest"
+// }
+
+guestRoom.area; // 12
+guestRoom.name; // "Guest"
+Пример выше показывает, что, вызвав функцию-конструктор с ключевым оператором new, создался новый экземпляр объекта с проинициализированными для этого объекта свойствами.
+При вызове функции-конструктора с оператором new, создается новый объект, в this, как контекст выполнения, «подставляется» созданный объект. То есть this, при вызове функции в качестве конструктора, ссылается на созданный объект.
+Кроме свойств, можно добавлять и методы.
+
+function Room (name, area) {
+    this.area = area;
+    this.name = name;
+
+    this.showInfo = function() {
+        console.log(`Type of room: ${this.name}, area: ${this.area}`);
+    }
+}
+
+const room1 = new Room('Guest', 15);
+const room2 = new Room('Bedroom', 12);
+
+room1.showInfo(); // Type of room: Guest, area: 15
+room2.showInfo(); // Type of room: Bedroom, area: 12
+С помощью конструктора можно «конструировать» любое количество объектов, каждый из которых будет содержать индивидуальные значения, которые передаются как параметры.
+Как и в случае с «Модулем», можно задавать не только публичные, но и приватные, локальные свойства и методы.
+
+function Room (name, area, number) {
+    const quantity = 3;
+    this.area = area;
+    this.name = name;
+    this.number = number;
+
+    showInfo = () => {
+        return `Type of room: ${this.name}, area: ${this.area}`;
+    }
+
+    this.getFullDescription = () => {
+        const info = showInfo();
+
+        console.log(`${info}. It's ${this.number} of ${quantity} room.`);
+    }
+}
+
+const room1 = new Room('Guest', 15, '1st');
+
+room1.getFullDescription(); // Type of room: Guest, area: 15. It's 1st of 3 room.
+Обратите внимание, что внутренняя функция showInfo, определенна как стрелочная, так как, если мы определим ее как обычную функцию, то ее this будет равен window, а не новому объекту.
+Следует отметить, что стрелочные функции не могут быть использованы как функции-конструкторы. Связано это именно с особенностями this в стрелочных функция, описанных ранее.
+
+const Room = () => { }
+
+const guestRoom = new Room();
+// Uncaught TypeError: Room is not a constructor
+Решения проблемы потери контекста
+
+Контекст используется для ссылки на значение this в конкретной части кода и определяется в момент вызова функции.
+Часто встречаются случаи, когда функция теряет нужный нам контекст выполнения.
+Такое происходит в случаях использования внутренних функций или функций обратного вызова.
+Приведем несколько примеров, в которых функции теряют свой контекст.
+
+let user = {
+    outerFunction: function() {
+        console.log(this === user);
+
+        function innerFunction() {
+            console.log(this === user);
+        }
+
+        innerFunction ();
+    }
+}
+
+user.outerFunction();
+// true
+// false
+В примере выше, контекстом функции innerFunction будет не объект user.
+
+let user = {
+    firstName: 'John',
+    secondName: 'Jarvis',
+    getFullName: function() {
+        setTimeout(function() {
+            console.log(`Full name: ${this.firstName} ${this.secondName}`);
+        }, 2000);
+    }
+}
+
+user.getFullName(); // Full name: undefined undefined
+Функция getFullName содержит в себе setTimeout, в которую передана анонимная функция. Она должна вывести строку со значениями свойств объекта. Но контекстом функции обратного вызова будет не объект user.
+
+function Room (type, area) {
+    this.area = area;
+    this.type = type;
+
+    function showInfo() {
+        console.log(`Type of room: ${this.type}, area: ${this.area}`);
+    }
+
+    this.getFullDescription = function() {
+        showInfo();
+    }
+}
+
+const room1 = new Room('Guest', 15);
+
+room1.getFullDescription(); // Type of room: undefined, area: undefined
+Создав новый экземпляр объекта room1, контекстом this становится этот объект. Но контекстом исполнения функции showInfo будет window.
+Существует несколько способов сохранения нужного контекста:
+
+• сохранение this в переменную;
+• использование специальных методов;
+• использование стрелочной функции.
+Сохранение this в переменную.
+
+Контекст исполнения функции можно сохранить в переменной и далее использовать эту переменную как контекст исполнения.
+
+let user = {
+    firstName: 'John',
+    secondName: 'Jarvis',
+    getFullName: function() {
+        const self = this;
+
+        setTimeout(function() {
+            console.log(`Full name: ${self.firstName} ${self.secondName}`);
+        }, 2000);
+    }
+}
+
+user.getFullName(); // Full name: John Jarvis
+Сохраняем this в переменную или константу self. Далее используем self вместо this в функции обратного вызова, которая была передана в setTimeout. Таким образом можно получить доступ к внешнему контексту, сохранив его в переменную.
+
+Использование специальных методов.
+
+Существует три таких метода: call(), apply() и bind().
+Эти методы помогают присвоить нужный контекст исполнения для функции. Они принимают два параметра. Первый параметр – контекст, с которым необходимо вызвать функцию. Второй (необязательный) параметр – параметры, которые функция будет принимать в момент ее вызова.
+
+functionName.call(context, params);
+Call – вызывает функцию и позволяет передать в нее параметры один за другим через запятую.
+Apply – вызывает функцию и позволяет передать в нее параметры в виде массива.
+Bind – возвращает новую функцию, позволяет передать в нее параметры один за другим или в виде массива.
+
+function say(greeting) {
+    console.log(`${greeting} ${this.firstName} ${this.lastName}`);
+}
+
+say('Hello'); // Hello undefined undefined
+Создана функция, которая возвращает приветствие, в котором значения firstName и lastName зависят от контекста вызова функции. В данном случае, не найдя в глобальной области видимости соответственных значений, получаем undefined.
+Описанные выше методы, помогут задать этой функции контекст выполнения, не помещая ее в объект.
+С помощью метода call назначаем контекстом выполнения функции разные объекты. Каждый вызов вернет те значения, которые содержатся в соответствующем объекте.
+
+function say(greeting) {
+    console.log(`${greeting} ${this.firstName} ${this.lastName}`);
+}
+
+const person1 = { firstName: 'John', lastName: 'Jarvis' };
+const person2 = { firstName: 'Paul', lastName: 'Johnson' };
+
+say.call(person1, 'Hello'); // Hello John Jarvis
+say.call(person2, 'Hello'); // Hello Paul Johnson
+Принцип работы метода apply такой же, как и у метода call. Единственным отличием является то, что метод apply принимает параметры в виде массива, а в метод call передаются перечисляемые через запятую параметры.
+
+function say(greeting) {
+    console.log(`${greeting} ${this.firstName} ${this.lastName}`);
+}
+
+const person1 = { firstName: 'John', lastName: 'Jarvis' };
+const person2 = { firstName: 'Paul', lastName: 'Johnson' };
+
+say.apply(person1, ['Hello']); // Hello John Jarvis
+say.apply(person2, ['Hello']); // Hello Paul Johnson
+В отличии от методов call и apply, bind не выполняет функцию, как только он был применен. Этот метод создает новую функцию с привязанным контекстом, которую можно вызвать в любом месте или в определенный момент, при этом, привязанный ранее контекст будет сохранен. Параметры в этот метод можно как перечислять через запятую, так и передавать в виде массива.
+
+const person1 = { firstName: 'John', lastName: 'Jarvis' };
+const person2 = { firstName: 'Paul', lastName: 'Johnson' };
+
+function say(greeting) {
+    console.log(`${greeting} ${this.firstName} ${this.lastName}`);
+}
+
+const sayHello1 = say.bind(person1, 'Hello');
+const sayHello2 = say.bind(person2, ['Hi']);
+
+sayHello1(); // Hello John Jarvis
+sayHello2(); // Hi Paul Johnson
+Для функции, которая была создана таким образом (с помощью bind), уже нельзя изменить контекст с помощью методов call или apply.
+
+const person1 = { firstName: 'John', lastName: 'Jarvis' };
+const person2 = { firstName: 'Paul', lastName: 'Johnson' };
+
+function say(greeting) {
+    console.log(`${greeting} ${this.firstName} ${this.lastName}`);
+}
+
+const sayHello1 = say.bind(person1, 'Hello');
+const sayHello2 = say.bind(person2, ['Hi']);
+
+sayHello1(); // Hello John Jarvis
+sayHello2.call(person1, 'Hello'); // Hi Paul Johnson
+Эти методы могут использоваться для решения проблемы потери контекста у вложенных или функций обратного вызова.
+Применим call на одном из ранее показанных примерах потери контекста.
+
+function Room (type, area) {
+    this.area = area;
+    this.type = type;
+
+    function showInfo() {
+        console.log(`Type of room: ${this.type}, area: ${this.area}`);
+    }
+
+    this.getFullDescription = function() {
+        showInfo.call(this);
+    }
+}
+
+const room1 = new Room('Guest', 15);
+
+room1.getFullDescription(); // Type of room: Guest, area: 15
+При вызове функции showInfo, внутри метода getFullDescription, с помощью метода call явно указали контекстом this, в который «подставится» созданный экземпляр объекта room1.
+
+Использование стрелочной функции.
+
+Так как стрелочные функции не имеют собственного контекста и заимствуют его извне, то используя такую функцию как вложенную или функцию обратного вызова, она не потеряет внешний контекст при выполнении.
+
+let user = {
+    firstName: 'John',
+    secondName: 'Jarvis',
+    getFullName: function() {
+        setTimeout(() => {
+            console.log(`Full name: ${this.firstName} ${this.secondName}`);
+        }, 2000);
+    }
+}
+
+user.getFullName(); // Full name: John Jarvis
+Стрелочным функциям нельзя изменить контекст с помощью call(), apply() или bind().
